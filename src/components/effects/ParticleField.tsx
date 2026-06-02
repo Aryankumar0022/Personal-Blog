@@ -3,12 +3,11 @@
 import { useRef, useEffect, useCallback } from "react";
 
 /* ============================================================
-   ParticleField — Ambient floating particles background.
+   ParticleField — Dynamic Flow Field Background.
    
-   Renders a field of slowly drifting, fading particles on a
-   Canvas element. Creates a subtle, living background effect.
-   Features an "antigravity/swarm" effect where particles are
-   attracted to the user's mouse cursor.
+   Renders a field of particles drawn as tiny oriented dashes
+   that form a continuous color gradient across the screen.
+   Features a fast, highly reactive mouse attraction and swirl.
    ============================================================ */
 
 /** Configuration for a single particle. */
@@ -22,34 +21,21 @@ interface Particle {
   radius: number;
   opacity: number;
   targetOpacity: number;
-  color: string;
+  colorOffset: number; // Random variation for color sampling
 }
 
-/** Props for the ParticleField component. */
 export interface ParticleFieldProps {
   /** Number of particles to render. */
   count?: number;
-  /** Particle colors (randomly sampled). */
-  colors?: string[];
-  /** Maximum particle radius in pixels. */
-  maxRadius?: number;
-  /** Maximum particle velocity. */
-  maxSpeed?: number;
-  /** Whether to draw faint connection lines between nearby particles. */
-  connectDistance?: number;
   /** Additional CSS class names for the canvas container. */
   className?: string;
 }
 
 /**
- * An ambient floating particle field rendered on HTML5 Canvas.
+ * An ambient flow-field particle system rendered on HTML5 Canvas.
  */
 export function ParticleField({
-  count = 70,
-  colors = ["#2563EB", "#8B5CF6", "#06B6D4", "#10B981"],
-  maxRadius = 2,
-  maxSpeed = 1.5,
-  connectDistance = 120,
+  count = 800, // Increased count for the field effect
   className = "",
 }: ParticleFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,30 +49,30 @@ export function ParticleField({
   const initParticles = useCallback(
     (width: number, height: number) => {
       particlesRef.current = Array.from({ length: count }, () => {
-        const vx = (Math.random() - 0.5) * maxSpeed;
-        const vy = (Math.random() - 0.5) * maxSpeed;
+        const vx = (Math.random() - 0.5) * 1.5;
+        const vy = (Math.random() - 0.5) * 1.5;
         return {
           x: Math.random() * width,
           y: Math.random() * height,
           vx,
           vy,
-          baseVx: vx,
-          baseVy: vy,
-          radius: Math.random() * maxRadius + 0.8,
+          baseVx: vx * 0.5,
+          baseVy: vy * 0.5,
+          radius: Math.random() * 1.5 + 0.5,
           opacity: 0,
-          targetOpacity: Math.random() * 0.6 + 0.2,
-          color: colors[Math.floor(Math.random() * colors.length)],
+          targetOpacity: Math.random() * 0.7 + 0.3,
+          colorOffset: (Math.random() - 0.5) * 0.2, // +/- 20% position offset for color
         };
       });
     },
-    [count, colors, maxRadius, maxSpeed]
+    [count]
   );
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
@@ -99,7 +85,7 @@ export function ParticleField({
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
 
-      if (particlesRef.current.length === 0) {
+      if (particlesRef.current.length === 0 || particlesRef.current.length !== count) {
         initParticles(rect.width, rect.height);
       }
     };
@@ -107,10 +93,8 @@ export function ParticleField({
     resize();
     window.addEventListener("resize", resize);
 
-    // Track mouse movement globally so it works even if the canvas is behind UI elements
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      // Ensure mouse coordinates are relative to the canvas
       mouseRef.current = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
@@ -124,6 +108,25 @@ export function ParticleField({
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseout", handleMouseLeave);
 
+    // Color gradient stops matching the screenshot (Blue -> Purple -> Red -> Orange)
+    const getGradientColor = (ratio: number) => {
+      // Clamp ratio
+      const r = Math.max(0, Math.min(1, ratio));
+      if (r < 0.33) {
+        // Blue to Purple (#2563EB to #8B5CF6)
+        const t = r / 0.33;
+        return `rgb(${Math.floor(37 + t * (139 - 37))}, ${Math.floor(99 + t * (92 - 99))}, ${Math.floor(235 + t * (246 - 235))})`;
+      } else if (r < 0.66) {
+        // Purple to Red/Rose (#8B5CF6 to #F43F5E)
+        const t = (r - 0.33) / 0.33;
+        return `rgb(${Math.floor(139 + t * (244 - 139))}, ${Math.floor(92 + t * (63 - 92))}, ${Math.floor(246 + t * (94 - 246))})`;
+      } else {
+        // Red to Orange (#F43F5E to #F97316)
+        const t = (r - 0.66) / 0.34;
+        return `rgb(${Math.floor(244 + t * (249 - 244))}, ${Math.floor(63 + t * (115 - 63))}, ${Math.floor(94 + t * (22 - 94))})`;
+      }
+    };
+
     // ---------- Animation Loop ----------
     const animate = () => {
       const rect = canvas.getBoundingClientRect();
@@ -134,46 +137,59 @@ export function ParticleField({
 
       const particles = particlesRef.current;
       const mouse = mouseRef.current;
-      const interactionRadius = 350; // Increased interaction distance
+      const interactionRadius = 400; // Large interaction area
+
+      const cx = width / 2;
+      const cy = height / 2;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
         // Fade in on load
         if (p.opacity < p.targetOpacity) {
-          p.opacity += 0.005;
+          p.opacity += 0.01;
         }
 
-        // Swarm / Antigravity logic
+        // --- Physics & Forces ---
+
+        // 1. Global gentle swirl around center
+        const dcx = cx - p.x;
+        const dcy = cy - p.y;
+        const distToCenter = Math.sqrt(dcx * dcx + dcy * dcy);
+        if (distToCenter > 0) {
+          p.vx += (dcy / distToCenter) * 0.015;
+          p.vy -= (dcx / distToCenter) * 0.015;
+        }
+
+        // 2. Fast Mouse Attraction / Swirl
         if (mouse.x !== null && mouse.y !== null) {
           const dx = mouse.x - p.x;
           const dy = mouse.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < interactionRadius) {
-            // Calculate attraction force (stronger closer to the cursor)
-            const force = (interactionRadius - dist) / interactionRadius;
+            const force = Math.pow((interactionRadius - dist) / interactionRadius, 1.5);
             
-            // Stronger pull and swirl for faster effect
-            const pullStrength = 0.15;
-            const swirlStrength = 0.08;
+            // Much stronger, faster pull
+            const pullStrength = 0.8;
+            const swirlStrength = 0.6;
             
             p.vx += (dx / dist) * force * pullStrength;
             p.vy += (dy / dist) * force * pullStrength;
             
-            // Add perpendicular vector for swirl
+            // Fast swirl around mouse
             p.vx += (dy / dist) * force * swirlStrength;
             p.vy -= (dx / dist) * force * swirlStrength;
           }
         }
 
-        // Apply gentle friction so they don't accelerate infinitely
-        p.vx *= 0.94; // Increased friction to control higher speeds
-        p.vy *= 0.94;
+        // Apply friction to prevent infinite acceleration but keep it fluid
+        p.vx *= 0.92;
+        p.vy *= 0.92;
 
-        // Restore base drift if velocity drops too low (e.g. mouse left)
-        p.vx += (p.baseVx - p.vx) * 0.05;
-        p.vy += (p.baseVy - p.vy) * 0.05;
+        // Restore gentle drift
+        p.vx += (p.baseVx - p.vx) * 0.02;
+        p.vy += (p.baseVy - p.vy) * 0.02;
 
         // Move particle
         p.x += p.vx;
@@ -185,51 +201,37 @@ export function ParticleField({
         if (p.y < -20) p.y = height + 20;
         if (p.y > height + 20) p.y = -20;
 
-        // Draw particle
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        // --- Rendering ---
         
-        // Particles glow brighter when moving fast (caught in gravity well)
+        // Color based on horizontal position (0 to 1) + individual random offset
+        const xRatio = (p.x / width) + p.colorOffset;
+        const color = getGradientColor(xRatio);
+
+        // Speed determines the length of the dash
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        const dynamicOpacity = Math.min(1, p.opacity + (speed * 0.1));
+        const dashLength = Math.max(3, Math.min(speed * 3, 20)); // Cap length
         
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = dynamicOpacity;
+        // Calculate angle of movement
+        // If speed is very low, it just draws a short horizontal-ish dash
+        const angle = speed > 0.1 ? Math.atan2(p.vy, p.vx) : Math.atan2(p.baseVy, p.baseVx);
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
         
-        // Add subtle glow
-        ctx.shadowBlur = speed > 1 ? 10 : 3;
-        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.moveTo(-dashLength / 2, 0);
+        ctx.lineTo(dashLength / 2, 0);
         
-        ctx.fill();
-        ctx.shadowBlur = 0; // Reset for lines
-
-        // Draw connections to nearby particles
-        if (connectDistance > 0) {
-          for (let j = i + 1; j < particles.length; j++) {
-            const q = particles[j];
-            const dx = p.x - q.x;
-            const dy = p.y - q.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            // Dynamically increase connect distance if particles are caught in swarm
-            const dynamicConnectDist = (speed > 1) ? connectDistance * 1.5 : connectDistance;
-
-            if (dist < dynamicConnectDist) {
-              const lineOpacity =
-                (1 - dist / dynamicConnectDist) * 0.15 * Math.min(dynamicOpacity, q.opacity);
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(q.x, q.y);
-              ctx.strokeStyle = p.color;
-              ctx.globalAlpha = lineOpacity;
-              ctx.lineWidth = 0.5;
-              ctx.stroke();
-            }
-          }
-        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = p.radius * 1.5;
+        ctx.lineCap = "round";
+        ctx.globalAlpha = Math.min(1, p.opacity + (speed * 0.05)); // Brighter when fast
+        
+        ctx.stroke();
+        ctx.restore();
       }
 
-      ctx.globalAlpha = 1;
       animationFrameRef.current = requestAnimationFrame(animate);
     };
 
@@ -241,12 +243,12 @@ export function ParticleField({
       window.removeEventListener("mouseout", handleMouseLeave);
       cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [initParticles, connectDistance]);
+  }, [initParticles]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={`pointer-events-none ${className}`}
+      className={`absolute inset-0 pointer-events-none ${className}`}
       aria-hidden="true"
     />
   );
