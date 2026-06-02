@@ -64,9 +64,11 @@
 
   /* Subtle Glass / Elevated Card effect */
   --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-strong-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(17, 24, 39, 0.05);
   --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
   --glass-blur: 8px;
+  --glass-strong-blur: 16px;
 
   /* Hover elevation instead of neon glow */
   --elevation-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
@@ -96,9 +98,11 @@
 
   /* Glass — dark & subtle */
   --glass-bg: rgba(24, 24, 27, 0.6);
+  --glass-strong-bg: rgba(24, 24, 27, 0.85);
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
   --glass-blur: 12px;
+  --glass-strong-blur: 24px;
 
   /* Hover elevation instead of neon glow */
   --elevation-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
@@ -165,6 +169,14 @@ body {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-strong {
+  background: var(--glass-strong-bg);
+  backdrop-filter: blur(var(--glass-strong-blur));
+  -webkit-backdrop-filter: blur(var(--glass-strong-blur));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
 }
