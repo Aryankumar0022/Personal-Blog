@@ -1,0 +1,30 @@
+---
+id: "project-nexus-journal"
+title: "Nexus Journal: Building This Blog"
+abstract: "A project deep-dive into the design and engineering decisions behind this very site — a knowledge graph blog."
+type: "project"
+category: "projects"
+tags: ["next.js","react","typescript","knowledge-graph","design","meta"]
+coverImage: "/images/covers/nexus-journal-building-this-blog.jpg"
+publishedAt: "2026-05-20"
+readTime: 8
+popularity: 92
+featured: true
+---
+Every few years I rebuild my personal site. This time, I wanted to build something that reflected how I actually think: not as a chronological stream of posts, but as a web of interconnected ideas. That impulse led to Nexus Journal — a blog reimagined as an interactive knowledge graph.
+
+## Design Philosophy
+
+The core metaphor is a digital universe. Each article is a star. Related articles are connected by gravitational links. Categories are galaxies. The home page is a force-directed graph that you can explore, zoom, and click through. It's not the most efficient way to browse a blog, but it's the most *interesting* way — and for a personal site, I think that matters more.
+
+## Technical Stack
+
+Nexus Journal is built on Next.js 16 with React 19, TypeScript, and Tailwind CSS v4. The knowledge graph is rendered with react-force-graph-2d backed by d3-force. Animations use Motion (formerly Framer Motion). The entire site is statically generated at build time — there's no CMS, no database, just TypeScript files that define the content and relationships.
+
+## The Graph Data Layer
+
+The most interesting engineering challenge was the data layer. Each article is a ContentNode with a unique id, and relationships are defined as ContentLink objects with a strength value. At build time, these are transformed into the GraphData format that react-force-graph expects. Galaxy colours are applied to nodes, and link thickness is derived from relationship strength.
+
+## What I Learned
+
+Building a non-traditional blog forced me to think carefully about navigation, discoverability, and performance. A force-directed graph with 50+ nodes can be computationally expensive, so I had to implement warmup ticks, cooldown timers, and lazy rendering for off-screen nodes. The result is a site that feels alive — nodes drift gently, connections pulse, and the whole system responds to your cursor.

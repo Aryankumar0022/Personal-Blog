@@ -10,10 +10,11 @@
  * ```
  */
 
-export { GALAXIES, getGalaxy, getGalaxyColor } from './categories';
+export { getGalaxies, getGalaxy, getGalaxyColor } from './categories';
 
 export {
-  ARTICLES,
+  getAllArticles,
+  getAllArticleMetadata,
   getArticle,
   getArticlesByCategory,
   getFeaturedArticles,
@@ -23,5 +24,6 @@ export {
 export {
   RELATIONSHIPS,
   getRelatedNodes,
-  getGraphData,
 } from './relationships';
+
+export { getGraphData } from './graph';

@@ -1,0 +1,31 @@
+---
+id: "article-llm-architecture"
+title: "The Architecture of Large Language Models"
+abstract: "A deep dive into the transformer architecture that powers modern LLMs — from self-attention to emergent capabilities."
+type: "article"
+category: "ai-research"
+tags: ["transformers","LLM","deep-learning","attention","scaling-laws"]
+coverImage: "/images/covers/the-architecture-of-large-language-models.jpg"
+publishedAt: "2026-03-15"
+updatedAt: "2026-05-10"
+readTime: 12
+popularity: 95
+featured: true
+---
+Large language models have fundamentally reshaped our understanding of what neural networks can achieve. At their core, these models rely on the transformer architecture introduced by Vaswani et al. in 2017, but the scale at which they operate has unlocked capabilities that were not predicted by their designers.
+
+## Transformer Fundamentals
+
+The transformer replaces recurrence with self-attention, allowing every token in a sequence to attend to every other token in parallel. This parallelism is what made scaling feasible — unlike LSTMs, transformers can leverage thousands of GPU cores simultaneously. The architecture consists of stacked encoder and decoder blocks, though most modern LLMs use decoder-only variants.
+
+Each layer applies multi-head self-attention followed by a position-wise feed-forward network. Residual connections and layer normalisation stabilise training at depth. The key innovation is that the attention mechanism learns *which* parts of the input are relevant to each output position, rather than compressing the entire sequence into a fixed-size hidden state.
+
+## Scaling Laws and Emergent Behaviour
+
+Research from OpenAI and DeepMind has demonstrated predictable scaling laws: as you increase model parameters, dataset size, and compute budget in proportion, loss decreases as a smooth power law. But the truly surprising finding is that certain capabilities — arithmetic reasoning, code generation, chain-of-thought inference — appear abruptly at specific scale thresholds.
+
+These emergent capabilities suggest that LLMs are doing more than pattern matching. They appear to build internal representations of syntax, semantics, and even world models. Whether these representations constitute genuine "understanding" remains one of the most debated questions in AI research today.
+
+## Practical Implications
+
+For engineers, the architecture decisions behind LLMs have immediate practical consequences. Choosing between dense and mixture-of-experts models, deciding on context window length, and implementing efficient inference through techniques like KV-cache, speculative decoding, and quantisation — these are the problems that define production AI systems. The architecture is no longer academic; it is infrastructure.

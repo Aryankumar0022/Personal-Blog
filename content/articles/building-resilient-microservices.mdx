@@ -1,0 +1,32 @@
+---
+id: "article-resilient-microservices"
+title: "Building Resilient Microservices"
+abstract: "Patterns for designing microservice architectures that degrade gracefully under failure — circuit breakers, bulkheads, and beyond."
+type: "article"
+category: "software-engineering"
+tags: ["microservices","distributed-systems","resilience","circuit-breaker","observability"]
+coverImage: "/images/covers/building-resilient-microservices.jpg"
+publishedAt: "2026-02-20"
+readTime: 10
+popularity: 82
+featured: true
+---
+Microservices promise independent deployability, team autonomy, and technology flexibility. But they also introduce a category of failures that monoliths never had to deal with: network partitions, cascading timeouts, and partial system degradation. Building resilient microservices is less about preventing failure and more about designing systems that fail well.
+
+## The Fallacies of Distributed Computing
+
+Every microservice architecture must confront the eight fallacies of distributed computing. The network is not reliable. Latency is not zero. Bandwidth is not infinite. These aren't theoretical concerns — they manifest as real production incidents at 3 AM. The first step toward resilience is accepting that failure is not an edge case; it's a feature of the environment.
+
+## Circuit Breakers and Bulkheads
+
+The circuit breaker pattern, popularised by Michael Nygard's *Release It!*, prevents a failing downstream service from dragging the entire system down. When a service detects that calls to a dependency are failing above a threshold, it "opens" the circuit and returns a fallback response immediately. After a cooldown period, it allows a few probe requests through to check if the dependency has recovered.
+
+Bulkheads take a different approach: instead of protecting against cascading failure, they isolate failures to specific subsystems. By assigning dedicated thread pools or connection pools to each dependency, a slow database query can't starve the thread pool that handles API requests. The system degrades partially rather than catastrophically.
+
+## Observability as a Foundation
+
+Resilience without observability is flying blind. Distributed tracing (OpenTelemetry), structured logging, and metric dashboards aren't nice-to-haves — they're prerequisites. When a service call takes 800ms instead of 50ms, you need to know *which* hop in the chain introduced the latency. Traces give you that answer. Without them, debugging a microservice failure across ten services and three data centres is an exercise in frustration.
+
+## The Human Element
+
+Technical patterns only go so far. The most resilient systems I've worked on had something in common: a culture of blameless postmortems, game days where engineers intentionally break production (in controlled ways), and runbooks that are tested regularly. Technology enables resilience, but culture sustains it.

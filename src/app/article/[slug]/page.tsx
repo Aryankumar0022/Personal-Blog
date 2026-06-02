@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getArticle, ARTICLES } from "@/lib/data/articles";
+import { getArticle, getAllArticles, getAllArticleMetadata } from "@/lib/data/articles";
+import { getGalaxies } from "@/lib/data/categories";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ArticlePageClient } from "./ArticlePageClient";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import rehypeSlug from "rehype-slug";
 
 /* ============================================================
    Article Page — Server Component (Route Handler)
@@ -16,7 +19,7 @@ import { ArticlePageClient } from "./ArticlePageClient";
 
 /** Generate static params for all articles at build time. */
 export async function generateStaticParams() {
-  return ARTICLES.map((article) => ({
+  return getAllArticles().map((article) => ({
     slug: article.slug,
   }));
 }
@@ -61,5 +64,19 @@ export default async function ArticlePage({
     notFound();
   }
 
-  return <ArticlePageClient article={article} />;
+  const allArticles = getAllArticleMetadata();
+  const galaxies = getGalaxies();
+
+  return (
+    <ArticlePageClient article={article} allArticles={allArticles} galaxies={galaxies}>
+      <MDXRemote 
+        source={article.content} 
+        options={{
+          mdxOptions: {
+            rehypePlugins: [rehypeSlug],
+          }
+        }}
+      />
+    </ArticlePageClient>
+  );
 }

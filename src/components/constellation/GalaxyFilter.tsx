@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { GALAXIES } from "@/lib/data/categories";
-import type { CategoryId } from "@/lib/types";
+import type { CategoryId, Galaxy } from "@/lib/types";
 
 /* ============================================================
    GalaxyFilter — Horizontal category filter bar.
@@ -18,6 +17,8 @@ export interface GalaxyFilterProps {
   activeGalaxy: CategoryId | null;
   /** Callback when a galaxy is selected/deselected. */
   onSelectGalaxy: (galaxy: CategoryId | null) => void;
+  /** All available galaxies. */
+  galaxies: Galaxy[];
   /** Additional CSS class names. */
   className?: string;
 }
@@ -37,12 +38,14 @@ export interface GalaxyFilterProps {
  * <GalaxyFilter
  *   activeGalaxy={activeCategory}
  *   onSelectGalaxy={setActiveCategory}
+ *   galaxies={galaxies}
  * />
  * ```
  */
 export function GalaxyFilter({
   activeGalaxy,
   onSelectGalaxy,
+  galaxies,
   className = "",
 }: GalaxyFilterProps) {
   return (
@@ -71,7 +74,7 @@ export function GalaxyFilter({
       </motion.button>
 
       {/* Galaxy buttons */}
-      {GALAXIES.map((galaxy) => {
+      {galaxies.map((galaxy) => {
         const isActive = activeGalaxy === galaxy.id;
 
         return (

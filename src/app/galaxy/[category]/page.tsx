@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { GALAXIES } from "@/lib/data/categories";
+import { getGalaxies, getGalaxy } from "@/lib/data/categories";
+import { getAllArticleMetadata, getArticlesByCategory } from "@/lib/data/articles";
 import type { CategoryId } from "@/lib/types";
 import { GalaxyPageClient } from "./GalaxyPageClient";
 
@@ -13,7 +14,7 @@ import { GalaxyPageClient } from "./GalaxyPageClient";
 
 /** Generate static params for all galaxy categories. */
 export async function generateStaticParams() {
-  return GALAXIES.map((galaxy) => ({
+  return getGalaxies().map((galaxy) => ({
     category: galaxy.id,
   }));
 }
@@ -25,7 +26,8 @@ export async function generateMetadata({
   params: Promise<{ category: string }>;
 }): Promise<Metadata> {
   const { category } = await params;
-  const galaxy = GALAXIES.find((g) => g.id === category);
+  const galaxies = getGalaxies();
+  const galaxy = galaxies.find((g) => g.id === category);
 
   if (!galaxy) {
     return { title: "Not Found" };
@@ -44,11 +46,15 @@ export default async function GalaxyPage({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const galaxy = GALAXIES.find((g) => g.id === category);
+  const galaxies = getGalaxies();
+  const galaxy = galaxies.find((g) => g.id === category);
 
   if (!galaxy) {
     notFound();
   }
 
-  return <GalaxyPageClient galaxy={galaxy} />;
+  const allArticles = getAllArticleMetadata();
+  const articles = getArticlesByCategory(galaxy.id);
+
+  return <GalaxyPageClient galaxy={galaxy} articles={articles} allArticles={allArticles} galaxies={galaxies} />;
 }

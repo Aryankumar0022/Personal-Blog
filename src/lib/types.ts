@@ -64,6 +64,12 @@ export interface ContentNode {
   sections?: ArticleSection[];
 }
 
+/**
+ * Metadata for a content node without the bulky content string.
+ * Useful for passing to Client Components (like search or graphs).
+ */
+export type ContentNodeMetadata = Omit<ContentNode, 'content'>;
+
 // -----------------------------------------------------------------------------
 // Article Section (Table of Contents)
 // -----------------------------------------------------------------------------

@@ -1,0 +1,32 @@
+---
+id: "research-edge-computing"
+title: "The Future of Edge Computing"
+abstract: "How moving computation to the network edge is reshaping latency-sensitive applications — from autonomous vehicles to real-time AI inference."
+type: "research"
+category: "software-engineering"
+tags: ["edge-computing","distributed-systems","AI-inference","IoT","latency"]
+coverImage: "/images/covers/the-future-of-edge-computing.jpg"
+publishedAt: "2026-05-05"
+readTime: 10
+popularity: 71
+featured: false
+---
+The cloud solved the problem of scale, but it introduced the problem of latency. When a self-driving car needs to make a split-second decision, a 200ms round trip to a data centre is 200ms too many. Edge computing is the architectural response: move the computation closer to where the data is generated and where the decisions need to be made.
+
+## From Cloud to Edge
+
+The traditional cloud model centralises compute in a handful of hyperscale data centres. This works beautifully for batch processing, analytics, and applications where latency tolerance is measured in seconds. But a new generation of applications demands response times measured in milliseconds: augmented reality overlays, robotic surgery, real-time fraud detection, and on-device AI inference.
+
+Edge computing distributes compute across a spectrum of locations — from regional data centres to cell towers to the devices themselves. The trade-off is clear: you gain latency and bandwidth efficiency but sacrifice the economies of scale and operational simplicity of centralised cloud.
+
+## AI at the Edge
+
+The most exciting edge computing applications involve machine learning inference. Running a neural network on a smartphone, an IoT sensor, or a factory floor robot eliminates the need to transmit raw data to the cloud, reducing latency, bandwidth costs, and privacy exposure. Techniques like model quantisation, knowledge distillation, and neural architecture search for edge-optimised models are making this feasible even on devices with limited compute budgets.
+
+## Standards and Challenges
+
+The edge computing ecosystem is still fragmented. ETSI's Multi-access Edge Computing (MEC) standard, Kubernetes-based edge orchestration (KubeEdge, K3s), and WebAssembly-based runtimes are all competing to become the deployment standard. Meanwhile, operational challenges — remote device management, over-the-air updates, security patching at scale — remain largely unsolved.
+
+## Looking Ahead
+
+I believe edge computing will become invisible infrastructure within five years. Just as we stopped thinking about "the cloud" as a distinct architectural choice and started treating it as the default, edge will become a deployment target that frameworks and platforms handle automatically. The interesting question is not whether computation moves to the edge, but how programming models evolve to make edge-native development as simple as deploying a serverless function today.

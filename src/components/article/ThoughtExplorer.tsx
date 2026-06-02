@@ -5,10 +5,8 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ARTICLES } from "@/lib/data/articles";
 import { getRelatedNodes } from "@/lib/data/relationships";
-import { getGalaxy } from "@/lib/data/categories";
-import type { ContentNode, CategoryId } from "@/lib/types";
+import type { ContentNodeMetadata, CategoryId, Galaxy } from "@/lib/types";
 
 /* ============================================================
    ThoughtExplorer — Article connection graph.
@@ -22,6 +20,10 @@ import type { ContentNode, CategoryId } from "@/lib/types";
 export interface ThoughtExplorerProps {
   /** ID of the current article. */
   currentArticleId: string;
+  /** All articles (metadata only — no fs dependency). */
+  allArticles: ContentNodeMetadata[];
+  /** All galaxies for category lookups. */
+  galaxies: Galaxy[];
   /** Additional CSS class names. */
   className?: string;
 }
@@ -32,7 +34,7 @@ interface GroupedRelation {
   galaxyName: string;
   galaxyIcon: string;
   galaxyColor: string;
-  articles: ContentNode[];
+  articles: ContentNodeMetadata[];
 }
 
 /**
@@ -44,11 +46,17 @@ interface GroupedRelation {
  *
  * @example
  * ```tsx
- * <ThoughtExplorer currentArticleId={article.id} />
+ * <ThoughtExplorer
+ *   currentArticleId={article.id}
+ *   allArticles={allArticles}
+ *   galaxies={galaxies}
+ * />
  * ```
  */
 export function ThoughtExplorer({
   currentArticleId,
+  allArticles,
+  galaxies,
   className = "",
 }: ThoughtExplorerProps) {
   // Get related content, grouped by category
@@ -60,11 +68,11 @@ export function ThoughtExplorer({
 
     // Resolve IDs to full article objects
     const relatedArticles = relatedIds
-      .map((id) => ARTICLES.find((a) => a.id === id))
-      .filter(Boolean) as ContentNode[];
+      .map((id) => allArticles.find((a) => a.id === id))
+      .filter(Boolean) as ContentNodeMetadata[];
 
     // Group by category
-    const groups = new Map<CategoryId, ContentNode[]>();
+    const groups = new Map<CategoryId, ContentNodeMetadata[]>();
     for (const article of relatedArticles) {
       const existing = groups.get(article.category) ?? [];
       existing.push(article);
@@ -74,7 +82,8 @@ export function ThoughtExplorer({
     // Convert to array with galaxy info
     const result: GroupedRelation[] = [];
     groups.forEach((articles, categoryId) => {
-      const galaxy = getGalaxy(categoryId);
+      const galaxy = galaxies.find((g) => g.id === categoryId);
+      if (!galaxy) return;
       result.push({
         category: categoryId,
         galaxyName: galaxy.name,
@@ -85,7 +94,7 @@ export function ThoughtExplorer({
     });
 
     return result;
-  }, [currentArticleId]);
+  }, [currentArticleId, allArticles, galaxies]);
 
   if (groupedRelations.length === 0) return null;
 

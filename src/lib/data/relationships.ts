@@ -1,10 +1,12 @@
 // =============================================================================
-// Nexus Journal — Content Relationships & Graph Builder
+// Nexus Journal — Content Relationships (Client-safe)
+//
+// This file is deliberately free of `fs` / `path` / `gray-matter` imports so
+// it can be safely imported from Client Components (e.g. ThoughtExplorer).
+// The heavy `getGraphData()` builder lives in `graph.ts` instead.
 // =============================================================================
 
-import type { ContentLink, GraphData, GraphLink, GraphNode } from '../types';
-import { ARTICLES } from './articles';
-import { getGalaxyColor } from './categories';
+import type { ContentLink } from '../types';
 
 // -----------------------------------------------------------------------------
 // Relationship Definitions
@@ -173,39 +175,4 @@ export function getRelatedNodes(nodeId: string): ContentLink[] {
   return RELATIONSHIPS.filter(
     (r) => r.source === nodeId || r.target === nodeId,
   );
-}
-
-/**
- * Transform articles and relationships into the `GraphData` format
- * consumed by react-force-graph.
- *
- * - Nodes are coloured by their galaxy.
- * - Node `val` is derived from the popularity score for size differentiation.
- * - Links carry their original strength for rendering.
- *
- * @returns Complete `GraphData` payload ready for the force graph
- */
-export function getGraphData(): GraphData {
-  const nodes: GraphNode[] = ARTICLES.map((article) => ({
-    id: article.id,
-    name: article.title,
-    val: Math.max(2, article.popularity / 10),
-    color: getGalaxyColor(article.category),
-    category: article.category,
-    type: article.type,
-    slug: article.slug,
-    abstract: article.abstract,
-    coverImage: article.coverImage,
-    readTime: article.readTime,
-    popularity: article.popularity,
-  }));
-
-  const links: GraphLink[] = RELATIONSHIPS.map((rel) => ({
-    source: rel.source,
-    target: rel.target,
-    strength: rel.strength,
-    color: `rgba(255, 255, 255, ${rel.strength * 0.3})`,
-  }));
-
-  return { nodes, links };
 }

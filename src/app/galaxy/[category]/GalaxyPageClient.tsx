@@ -15,9 +15,8 @@ import { Badge } from "@/components/ui/Badge";
 
 import { useTheme } from "@/lib/hooks/useTheme";
 import { useKeyboardShortcut } from "@/lib/hooks/useKeyboardShortcut";
-import { getArticlesByCategory } from "@/lib/data/articles";
 import { formatDate } from "@/lib/utils";
-import type { Galaxy } from "@/lib/types";
+import type { Galaxy, ContentNode, ContentNodeMetadata } from "@/lib/types";
 
 /* ============================================================
    GalaxyPageClient — Category landing page.
@@ -29,17 +28,18 @@ import type { Galaxy } from "@/lib/types";
 /** Props for the GalaxyPageClient component. */
 interface GalaxyPageClientProps {
   galaxy: Galaxy;
+  articles: ContentNode[];
+  allArticles: ContentNodeMetadata[];
+  galaxies: Galaxy[];
 }
 
 /**
  * Client-side galaxy/category page.
  */
-export function GalaxyPageClient({ galaxy }: GalaxyPageClientProps) {
+export function GalaxyPageClient({ galaxy, articles, allArticles, galaxies }: GalaxyPageClientProps) {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  const articles = getArticlesByCategory(galaxy.id);
 
   // Keyboard shortcuts
   useKeyboardShortcut("ctrl+k", () => setIsSearchOpen(true));
@@ -56,6 +56,8 @@ export function GalaxyPageClient({ galaxy }: GalaxyPageClientProps) {
       <CommandPalette
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+        articles={allArticles}
+        galaxies={galaxies}
       />
 
       <main className="flex-1">

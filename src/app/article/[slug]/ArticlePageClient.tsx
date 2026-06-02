@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
@@ -17,7 +17,7 @@ import { ThoughtExplorer } from "@/components/article/ThoughtExplorer";
 import { useTheme } from "@/lib/hooks/useTheme";
 import { useScrollProgress } from "@/lib/hooks/useScrollProgress";
 import { useKeyboardShortcut } from "@/lib/hooks/useKeyboardShortcut";
-import type { ContentNode } from "@/lib/types";
+import type { ContentNode, ContentNodeMetadata, Galaxy } from "@/lib/types";
 
 /* ============================================================
    ArticlePageClient — Client-side article experience.
@@ -33,12 +33,15 @@ import type { ContentNode } from "@/lib/types";
 /** Props for the ArticlePageClient component. */
 interface ArticlePageClientProps {
   article: ContentNode;
+  allArticles: ContentNodeMetadata[];
+  galaxies: Galaxy[];
+  children?: ReactNode;
 }
 
 /**
  * Client-side article page with all interactive features.
  */
-export function ArticlePageClient({ article }: ArticlePageClientProps) {
+export function ArticlePageClient({ article, allArticles, galaxies, children }: ArticlePageClientProps) {
   const { theme, toggleTheme } = useTheme();
   const { progress: scrollProgress } = useScrollProgress();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -61,6 +64,8 @@ export function ArticlePageClient({ article }: ArticlePageClientProps) {
       <CommandPalette
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+        articles={allArticles}
+        galaxies={galaxies}
       />
 
       <main className="flex-1">
@@ -96,10 +101,9 @@ export function ArticlePageClient({ article }: ArticlePageClientProps) {
           <div className="flex gap-12">
             {/* Article body */}
             <div className="flex-1 min-w-0 max-w-3xl">
-              <ArticleBody
-                content={article.content}
-                sections={article.sections}
-              />
+              <ArticleBody>
+                {children}
+              </ArticleBody>
             </div>
 
             {/* Table of Contents sidebar */}
@@ -110,7 +114,11 @@ export function ArticlePageClient({ article }: ArticlePageClientProps) {
 
           {/* Thought Explorer — "This idea connects to:" */}
           <div className="mt-16 max-w-3xl">
-            <ThoughtExplorer currentArticleId={article.id} />
+            <ThoughtExplorer
+              currentArticleId={article.id}
+              allArticles={allArticles}
+              galaxies={galaxies}
+            />
           </div>
         </div>
       </main>

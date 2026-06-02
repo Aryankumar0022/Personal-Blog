@@ -2,6 +2,9 @@
 // Nexus Journal — Galaxy (Category) Definitions
 // =============================================================================
 
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
 import type { CategoryId, Galaxy } from '../types';
 import { COLORS } from '../constants';
 
@@ -9,86 +12,37 @@ import { COLORS } from '../constants';
 // Galaxy Registry
 // -----------------------------------------------------------------------------
 
+const CATEGORIES_DIR = path.join(process.cwd(), 'content', 'categories');
+
 /**
- * All galaxies (content categories) in the Nexus Journal universe.
- *
- * Each galaxy is a themed cluster in the knowledge graph, with its own
- * colour identity and gradient used in cards, badges, and graph nodes.
+ * Get all galaxies (content categories) in the Nexus Journal universe.
+ * Reads from content/categories/*.mdx files.
  */
-export const GALAXIES: Galaxy[] = [
-  {
-    id: 'ai-research',
-    name: 'AI Research',
-    description:
-      'Explorations in artificial intelligence, machine learning architectures, and the frontier of intelligent systems.',
-    icon: '🧠',
-    color: COLORS.galaxy['ai-research'],
-    gradient: ['#2563EB', '#7C3AED'],
-  },
-  {
-    id: 'software-engineering',
-    name: 'Software Engineering',
-    description:
-      'Systems design, distributed architecture, developer tooling, and the craft of building reliable software.',
-    icon: '⚙️',
-    color: COLORS.galaxy['software-engineering'],
-    gradient: ['#8B5CF6', '#EC4899'],
-  },
-  {
-    id: 'photography',
-    name: 'Photography',
-    description:
-      'Capturing light, colour, and moment — from golden-hour landscapes to candid street scenes.',
-    icon: '📷',
-    color: COLORS.galaxy['photography'],
-    gradient: ['#F59E0B', '#EF4444'],
-  },
-  {
-    id: 'travel',
-    name: 'Travel',
-    description:
-      'Wandering through cultures, cities, and landscapes — field notes from the physical world.',
-    icon: '🌍',
-    color: COLORS.galaxy['travel'],
-    gradient: ['#10B981', '#06B6D4'],
-  },
-  {
-    id: 'philosophy',
-    name: 'Philosophy',
-    description:
-      'Reflections on consciousness, ethics, meaning, and the perennial questions of human existence.',
-    icon: '💭',
-    color: COLORS.galaxy['philosophy'],
-    gradient: ['#06B6D4', '#3B82F6'],
-  },
-  {
-    id: 'personal',
-    name: 'Personal',
-    description:
-      'Life updates, introspections, and the unfiltered human behind the screen.',
-    icon: '✨',
-    color: COLORS.galaxy['personal'],
-    gradient: ['#F43F5E', '#F97316'],
-  },
-  {
-    id: 'projects',
-    name: 'Projects',
-    description:
-      'Deep dives into things I\'ve built — open-source tools, creative experiments, and side quests.',
-    icon: '🚀',
-    color: COLORS.galaxy['projects'],
-    gradient: ['#F97316', '#EAB308'],
-  },
-];
+export function getGalaxies(): Galaxy[] {
+  if (!fs.existsSync(CATEGORIES_DIR)) return [];
+  
+  const fileNames = fs.readdirSync(CATEGORIES_DIR);
+  const galaxies = fileNames
+    .filter((name) => name.endsWith('.mdx'))
+    .map((fileName) => {
+      const id = fileName.replace(/\.mdx$/, '') as CategoryId;
+      const fullPath = path.join(CATEGORIES_DIR, fileName);
+      const fileContents = fs.readFileSync(fullPath, 'utf8');
+      
+      const { data } = matter(fileContents);
+      
+      return {
+        id,
+        name: data.name,
+        description: data.description,
+        icon: data.icon,
+        color: data.color,
+        gradient: data.gradient,
+      } as Galaxy;
+    });
 
-// -----------------------------------------------------------------------------
-// Helper Functions
-// -----------------------------------------------------------------------------
-
-/** Internal lookup map for O(1) access by id. */
-const galaxyMap = new Map<CategoryId, Galaxy>(
-  GALAXIES.map((g) => [g.id, g]),
-);
+  return galaxies;
+}
 
 /**
  * Look up a galaxy by its `CategoryId`.
@@ -98,7 +52,8 @@ const galaxyMap = new Map<CategoryId, Galaxy>(
  * @throws {Error} If the id does not match any known galaxy
  */
 export function getGalaxy(id: CategoryId): Galaxy {
-  const galaxy = galaxyMap.get(id);
+  const galaxies = getGalaxies();
+  const galaxy = galaxies.find((g) => g.id === id);
   if (!galaxy) {
     throw new Error(`[Nexus] Unknown galaxy id: "${id}"`);
   }
@@ -107,9 +62,6 @@ export function getGalaxy(id: CategoryId): Galaxy {
 
 /**
  * Get the primary hex colour for a galaxy.
- *
- * Shorthand for `getGalaxy(id).color` — useful in graph renderers
- * and dynamic style generation.
  *
  * @param id - The category identifier
  * @returns Hex colour string (e.g. `"#2563EB"`)

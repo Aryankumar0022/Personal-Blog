@@ -8,7 +8,7 @@ import { X } from "lucide-react";
 import { KnowledgeGraph } from "@/components/constellation/KnowledgeGraph";
 import { GalaxyFilter } from "@/components/constellation/GalaxyFilter";
 import { useKeyboardShortcut } from "@/lib/hooks/useKeyboardShortcut";
-import type { GraphNode, CategoryId } from "@/lib/types";
+import type { GraphNode, CategoryId, GraphData, Galaxy } from "@/lib/types";
 
 /* ============================================================
    GraphModal — Full-screen Obsidian-style graph explorer.
@@ -18,13 +18,13 @@ import type { GraphNode, CategoryId } from "@/lib/types";
    ============================================================ */
 
 export interface GraphModalProps {
-  /** Whether the modal is currently open. */
   isOpen: boolean;
-  /** Callback to close the modal. */
   onClose: () => void;
+  galaxies: Galaxy[];
+  graphData: GraphData;
 }
 
-export function GraphModal({ isOpen, onClose }: GraphModalProps) {
+export function GraphModal({ isOpen, onClose, galaxies, graphData }: GraphModalProps) {
   const router = useRouter();
   
   // State for the graph
@@ -125,6 +125,7 @@ export function GraphModal({ isOpen, onClose }: GraphModalProps) {
               activeCategory={activeCategory}
               onNodeHover={handleNodeHover}
               onNodeClick={handleNodeClick}
+              graphData={graphData}
             />
           </div>
 
@@ -134,6 +135,7 @@ export function GraphModal({ isOpen, onClose }: GraphModalProps) {
               <GalaxyFilter
                 activeGalaxy={activeCategory}
                 onSelectGalaxy={setActiveCategory}
+                galaxies={galaxies}
               />
             </div>
           </div>

@@ -4,9 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, ArrowRight, FileText, Code, Camera, BookOpen, Compass } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { ARTICLES } from "@/lib/data/articles";
-import { GALAXIES } from "@/lib/data/categories";
-import type { ContentNode, CategoryId } from "@/lib/types";
+import type { ContentNode, CategoryId, Galaxy, ContentNodeMetadata } from "@/lib/types";
 import { CategoryBadge } from "@/components/ui/Badge";
 
 /* ============================================================
@@ -23,6 +21,10 @@ export interface CommandPaletteProps {
   isOpen: boolean;
   /** Callback to close the palette. */
   onClose: () => void;
+  /** All available articles metadata */
+  articles: ContentNodeMetadata[];
+  /** All available categories */
+  galaxies: Galaxy[];
 }
 
 /** Icon mapping for content types. */
@@ -51,7 +53,7 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
  * <CommandPalette isOpen={isSearchOpen} onClose={() => setSearchOpen(false)} />
  * ```
  */
-export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+export function CommandPalette({ isOpen, onClose, articles, galaxies }: CommandPaletteProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -61,7 +63,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   // ---------- Filtered Results ----------
   const results = useMemo(() => {
-    let filtered = ARTICLES;
+    let filtered = articles;
 
     // Filter by category
     if (selectedCategory) {
@@ -80,7 +82,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     }
 
     return filtered;
-  }, [query, selectedCategory]);
+  }, [query, selectedCategory, articles]);
 
   // ---------- Focus input on open ----------
   useEffect(() => {
@@ -133,7 +135,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   }, [selectedIndex]);
 
   /** Navigate to article and close palette. */
-  const navigateToArticle = (article: ContentNode) => {
+  const navigateToArticle = (article: Pick<ContentNode, 'slug'>) => {
     onClose();
     router.push(`/article/${article.slug}`);
   };
@@ -144,7 +146,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -204,7 +206,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 >
                   All
                 </button>
-                {GALAXIES.map((galaxy) => (
+                {galaxies.map((galaxy) => (
                   <button
                     key={galaxy.id}
                     onClick={() => {

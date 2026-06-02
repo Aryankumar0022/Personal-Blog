@@ -3,10 +3,9 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { getGraphData } from "@/lib/data/relationships";
 import { GRAPH_CONFIG } from "@/lib/constants";
 import { useTheme } from "@/lib/hooks/useTheme";
-import type { GraphNode, CategoryId } from "@/lib/types";
+import type { GraphNode, CategoryId, GraphData } from "@/lib/types";
 
 /* ============================================================
    KnowledgeGraph — Interactive force-directed knowledge graph.
@@ -35,6 +34,7 @@ export interface KnowledgeGraphProps {
   activeCategory?: CategoryId | null;
   onNodeHover?: (node: GraphNode | null, event: MouseEvent | null) => void;
   onNodeClick?: (node: GraphNode) => void;
+  graphData: GraphData;
 }
 
 export function KnowledgeGraph({
@@ -43,13 +43,12 @@ export function KnowledgeGraph({
   activeCategory = null,
   onNodeHover,
   onNodeClick,
+  graphData,
 }: KnowledgeGraphProps) {
   const graphRef = useRef<any>(null);
   const router = useRouter();
   const { isDark } = useTheme();
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-
-  const graphData = useMemo(() => getGraphData(), []);
 
     // ── Configure d3 forces after mount ───────────────────────────────
   useEffect(() => {
