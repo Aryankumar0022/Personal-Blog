@@ -59,6 +59,7 @@ export function ArticlePageClient({ article, allArticles, galaxies, children }: 
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenSearch={() => setIsSearchOpen(true)}
+        overDarkHero
       />
 
       <CommandPalette

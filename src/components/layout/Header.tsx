@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -23,6 +24,8 @@ export interface HeaderProps {
   onToggleTheme: () => void;
   /** Callback to open the command palette / search. */
   onOpenSearch: () => void;
+  /** Use light header text while transparent (over a dark hero). */
+  overDarkHero?: boolean;
 }
 
 /**
@@ -43,10 +46,11 @@ export interface HeaderProps {
  * />
  * ```
  */
-export function Header({ theme, onToggleTheme, onOpenSearch }: HeaderProps) {
+export function Header({ theme, onToggleTheme, onOpenSearch, overDarkHero = false }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const overDark = overDarkHero && !isScrolled;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,9 +93,9 @@ export function Header({ theme, onToggleTheme, onOpenSearch }: HeaderProps) {
                 className="flex items-center gap-2.5 group"
               >
                 {/* Animated logo mark */}
-                <div className="relative w-8 h-8 flex items-center justify-center">
+                <div className="relative w-8 h-8 flex items-center justify-center shrink-0 overflow-hidden rounded-lg">
                   <div
-                    className="absolute inset-0 rounded-lg animate-gradient"
+                    className="absolute inset-0 animate-gradient"
                     style={{
                       background:
                         "linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-violet), var(--color-accent-blue))",
@@ -99,9 +103,19 @@ export function Header({ theme, onToggleTheme, onOpenSearch }: HeaderProps) {
                       opacity: 0.9,
                     }}
                   />
-                  <span className="relative text-white font-bold text-sm">N</span>
+                  <Image
+                    src="/nexus-n-mark.png"
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="relative w-7 h-7 object-contain"
+                  />
                 </div>
-                <span className="font-[family-name:var(--font-geist-sans)] font-semibold text-[var(--text-primary)] text-lg tracking-tight hidden sm:block">
+                <span
+                  className={`font-[family-name:var(--font-geist-sans)] font-semibold text-lg tracking-tight hidden sm:block ${
+                    overDark ? "text-white" : "text-[var(--text-primary)]"
+                  }`}
+                >
                   {SITE_CONFIG.name}
                 </span>
               </Link>
@@ -109,19 +123,26 @@ export function Header({ theme, onToggleTheme, onOpenSearch }: HeaderProps) {
               {/* Center: Search Trigger */}
               <button
                 onClick={onOpenSearch}
-                className="
-                  hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl
-                  bg-[var(--bg-tertiary)] border border-[var(--border-primary)]
-                  text-[var(--text-tertiary)] text-sm
-                  hover:border-[var(--border-hover)] hover:text-[var(--text-secondary)]
-                  transition-all duration-200 cursor-pointer
-                  min-w-[240px]
-                "
+                className={`
+                  hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl text-sm
+                  transition-all duration-200 cursor-pointer min-w-[240px]
+                  ${
+                    overDark
+                      ? "bg-white/10 border border-white/20 text-white/70 hover:border-white/35 hover:text-white"
+                      : "bg-[var(--bg-tertiary)] border border-[var(--border-primary)] text-[var(--text-tertiary)] hover:border-[var(--border-hover)] hover:text-[var(--text-secondary)]"
+                  }
+                `}
                 aria-label="Open search (Ctrl+K)"
               >
                 <Search size={14} />
                 <span className="flex-1 text-left">Search knowledge...</span>
-                <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-xs text-[var(--text-tertiary)]">
+                <kbd
+                  className={`hidden md:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs ${
+                    overDark
+                      ? "bg-white/10 border border-white/20 text-white/60"
+                      : "bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-tertiary)]"
+                  }`}
+                >
                   ⌘K
                 </kbd>
               </button>
@@ -131,13 +152,25 @@ export function Header({ theme, onToggleTheme, onOpenSearch }: HeaderProps) {
                 {/* Mobile search button */}
                 <button
                   onClick={onOpenSearch}
-                  className="sm:hidden p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+                  className={`sm:hidden p-2 rounded-xl cursor-pointer ${
+                    overDark
+                      ? "text-white/80 hover:text-white"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
                   aria-label="Open search"
                 >
                   <Search size={18} />
                 </button>
 
-                <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+                <ThemeToggle
+                  theme={theme}
+                  onToggle={onToggleTheme}
+                  className={
+                    overDark
+                      ? "bg-white/10 border-white/20 text-white/80 hover:bg-white/20 hover:text-white"
+                      : ""
+                  }
+                />
               </div>
             </div>
           </div>

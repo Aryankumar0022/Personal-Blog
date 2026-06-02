@@ -132,7 +132,7 @@ export function ArticleHero({
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <CategoryBadge category={category} size="md" />
-          <span className="text-sm text-[var(--text-tertiary)] capitalize">
+          <span className="text-sm text-white/65 capitalize">
             {type}
           </span>
         </motion.div>
@@ -144,12 +144,12 @@ export function ArticleHero({
           splitBy="word"
           delay={0.3}
           stagger={0.06}
-          className="font-[family-name:var(--font-geist-sans)] text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-[var(--text-primary)] mb-4"
+          className="font-[family-name:var(--font-geist-sans)] text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-white mb-4"
         />
 
         {/* Abstract */}
         <motion.p
-          className="text-lg text-[var(--text-secondary)] max-w-2xl leading-relaxed mb-6"
+          className="text-lg text-white/85 max-w-2xl leading-relaxed mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
@@ -159,7 +159,7 @@ export function ArticleHero({
 
         {/* Date + Read time */}
         <motion.div
-          className="flex items-center gap-4 text-sm text-[var(--text-tertiary)]"
+          className="flex items-center gap-4 text-sm text-white/65"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.5 }}
@@ -168,7 +168,7 @@ export function ArticleHero({
             <Calendar size={14} />
             {formatDate(publishedAt)}
           </span>
-          <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)]" />
+          <span className="w-1 h-1 rounded-full bg-white/45" />
           <span className="flex items-center gap-1.5">
             <Clock size={14} />
             {readTime} min read
